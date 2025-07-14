@@ -1,3 +1,5 @@
+require('dotenv').config();
+const mysql = require('mysql2');
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -14,4 +16,42 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
+});
+
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
+});
+
+db.connect((err) => {
+  if (err) {
+    console.error("❌ Error al conectar a la base de datos:", err);
+  } else {
+    console.log("✅ Conectado a la base de datos MySQL");
+  }
+});
+
+app.post("/pedido", (req, res) => {
+  const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
+
+  const query = `
+    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
+    VALUES (?, ?, ?, ?, ?, ?, NOW())
+  `;
+
+  db.query(
+    query,
+    [cliente, telefono, producto, cantidad, direccion, pago],
+    (err, result) => {
+      if (err) {
+        console.error("❌ Error al registrar pedido:", err);
+        res.status(500).json({ mensaje: "Error al registrar el pedido" });
+      } else {
+        res.status(200).json({ mensaje: "✅ Pedido registrado con éxito", id: result.insertId });
+      }
+    }
+  );
 });
