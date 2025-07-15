@@ -55,3 +55,14 @@ app.post("/pedido", (req, res) => {
     }
   );
 });
+
+app.get("/pedidos", (req, res) => {
+  db.query("SELECT * FROM orders", (err, resultados) => {
+    if (err) {
+      console.error("❌ Error al obtener pedidos:", err);
+      res.status(500).send("Error al obtener los pedidos");
+    } else {
+      res.json(resultados);
+    }
+  });
+});
