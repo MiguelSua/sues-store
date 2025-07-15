@@ -10,7 +10,7 @@ const Checkout = ({ carrito }) => {
   const enviarPedido = async () => {
     try {
       for (let item of carrito) {
-        await axios.post("http://sues-store-production.up.railway.app", {
+        await axios.post("http://sues-store-production.up.railway.app/pedido", {
           cliente,
           telefono,
           direccion,
