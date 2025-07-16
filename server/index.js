@@ -56,17 +56,20 @@ app.post("/pedido", (req, res) => {
   );
 });
 
+
 app.get("/pedidos", (req, res) => {
+  const auth = req.query.auth;
+
+  if (auth !== process.env.ADMIN_KEY) {
+    return res.status(401).send("No autorizado");
+  }
+
   db.query("SELECT * FROM orders", (err, results) => {
     if (err) {
       console.error("❌ Error al obtener los pedidos:", err);
       return res.status(500).send("Error al obtener pedidos");
     }
 
-    // Puedes usar esto si prefieres verlos en texto crudo JSON:
-    // return res.json(results);
-
-    // Pero vamos a mostrarlos en una tabla HTML:
     let html = `
       <h2>📦 Pedidos Recibidos</h2>
       <table border="1" cellpadding="5" cellspacing="0">
@@ -101,4 +104,5 @@ app.get("/pedidos", (req, res) => {
     res.send(html);
   });
 });
+
 
