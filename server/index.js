@@ -4,6 +4,9 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Parser } = require("json2csv");
+const fields = ["id", "cliente", "telefono", "direccion", "pago", "producto", "cantidad", "fecha"];
+const parser = new Parser({ fields, delimiter: ";" });
+const csv = parser.parse(results);
 
 
 const app = express();
