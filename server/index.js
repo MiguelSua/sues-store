@@ -287,13 +287,7 @@ app.get("/descargar-csv", (req, res) => {
   });
 });
 
-db.query("DROP TABLE IF EXISTS citas", (err) => {
-  if (err) {
-    console.error("❌ Error al eliminar tabla:", err);
-  } else {
-    console.log("✅ Tabla 'orders' eliminada");
-  }
-});
+
 
 
 
