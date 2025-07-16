@@ -4,7 +4,8 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Parser } = require("json2csv");
-
+const nodemailer = require("nodemailer");
+require("dotenv").config(); // Asegúrate de tener esto arriba
 
 
 const app = express();
@@ -40,11 +41,50 @@ db.connect((err) => {
 app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
 
+  const nodemailer = require("nodemailer");
+ require("dotenv").config(); // Asegúrate de tener esto arriba
+  // Transportador de correos
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Después de guardar el pedido en la base de datos
+const enviarCorreo = (pedido) => {
+  const mailOptions = {
+    from: `"SUES Store" <${process.env.EMAIL_USER}>`,
+    to: process.env.EMAIL_USER, // Tú mismo recibirás el correo
+    subject: `🛒 Nuevo pedido de ${pedido.cliente}`,
+    html: `
+      <h3>📦 Pedido recibido</h3>
+      <p><b>Cliente:</b> ${pedido.cliente}</p>
+      <p><b>Teléfono:</b> ${pedido.telefono}</p>
+      <p><b>Dirección:</b> ${pedido.direccion}</p>
+      <p><b>Pago:</b> ${pedido.pago}</p>
+      <p><b>Producto:</b> ${pedido.producto}</p>
+      <p><b>Cantidad:</b> ${pedido.cantidad}</p>
+      <p><b>Fecha:</b> ${new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" })}</p>
+    `,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("❌ Error al enviar correo:", error);
+    } else {
+      console.log("📧 Correo enviado:", info.response);
+    }
+  });
+};
+
 
   const query = `
     INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
+  
 
   db.query(
     query,
@@ -54,6 +94,16 @@ app.post("/pedido", (req, res) => {
         console.error("❌ Error al registrar pedido:", err);
         res.status(500).json({ mensaje: "Error al registrar el pedido" });
       } else {
+
+        enviarCorreo({
+  cliente,
+  telefono,
+  direccion,
+  pago,
+  producto,
+  cantidad,
+});
+
         res.status(200).json({ mensaje: "✅ Pedido registrado con éxito", id: result.insertId });
       }
     }
