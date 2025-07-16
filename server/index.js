@@ -107,6 +107,50 @@ app.get("/pedidos", (req, res) => {
     html += "</table>";
     html += `
   </table>
+  <br />
+  <button onclick="eliminarTodos()">🗑️ Eliminar todos los pedidos</button>
+
+  <script>
+    function eliminarPedido(id) {
+      if (confirm("¿Estás seguro de eliminar el pedido " + id + "?")) {
+        fetch('/eliminar/' + id + '?auth=${process.env.ADMIN_KEY}', {
+          method: 'DELETE'
+        })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          location.reload();
+        })
+        .catch(err => {
+          alert("❌ Error al eliminar");
+          console.error(err);
+        });
+      }
+    }
+
+    function eliminarTodos() {
+      if (confirm("⚠️ Esta acción eliminará TODOS los pedidos.") &&
+          confirm("¿Estás completamente seguro?")) {
+        fetch('/eliminar-todos?auth=${process.env.ADMIN_KEY}', {
+          method: 'DELETE'
+        })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          location.reload();
+        })
+        .catch(err => {
+          alert("❌ Error al eliminar todos los pedidos");
+          console.error(err);
+        });
+      }
+    }
+  </script>
+`;
+
+    html += `
+  </table>
+  
   <script>
     function eliminarPedido(id) {
       if (confirm("¿Estás seguro de eliminar el pedido " + id + "?")) {
@@ -146,6 +190,23 @@ app.delete("/eliminar/:id", (req, res) => {
     res.send("✅ Pedido eliminado");
   });
 });
+
+app.delete("/eliminar-todos", (req, res) => {
+  const { auth } = req.query;
+
+  if (auth !== process.env.ADMIN_KEY) {
+    return res.status(403).send("Acceso denegado");
+  }
+
+  db.query("DELETE FROM rorders", (err, result) => {
+    if (err) {
+      console.error("❌ Error al eliminar todos los pedidos:", err);
+      return res.status(500).send("Error al eliminar todos");
+    }
+    res.send("✅ Todos los pedidos eliminados");
+  });
+});
+
 
 
 
