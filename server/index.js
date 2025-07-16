@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -72,6 +73,9 @@ app.get("/pedidos", (req, res) => {
 
     let html = `
       <h2>📦 Pedidos Recibidos</h2>
+      <a href="/descargar-csv?auth=${auth}">
+        <button style="margin-bottom: 10px;">📄 Descargar CSV</button>
+      </a>
       <table border="1" cellpadding="5" cellspacing="0">
         <tr>
           <th>ID</th>
