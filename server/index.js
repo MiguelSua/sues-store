@@ -198,7 +198,7 @@ app.delete("/eliminar-todos", (req, res) => {
     return res.status(403).send("Acceso denegado");
   }
 
-  db.query("DELETE FROM rorders", (err, result) => {
+  db.query("DELETE FROM orders", (err, result) => {
     if (err) {
       console.error("❌ Error al eliminar todos los pedidos:", err);
       return res.status(500).send("Error al eliminar todos");
