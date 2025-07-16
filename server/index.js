@@ -57,12 +57,48 @@ app.post("/pedido", (req, res) => {
 });
 
 app.get("/pedidos", (req, res) => {
-  db.query("SELECT * FROM orders", (err, resultados) => {
+  db.query("SELECT * FROM rorders", (err, results) => {
     if (err) {
-      console.error("❌ Error al obtener pedidos:", err);
-      res.status(500).send("Error al obtener los pedidos");
-    } else {
-      res.json(resultados);
+      console.error("❌ Error al obtener los pedidos:", err);
+      return res.status(500).send("Error al obtener pedidos");
     }
+
+    // Puedes usar esto si prefieres verlos en texto crudo JSON:
+    // return res.json(results);
+
+    // Pero vamos a mostrarlos en una tabla HTML:
+    let html = `
+      <h2>📦 Pedidos Recibidos</h2>
+      <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Pago</th>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Fecha</th>
+        </tr>
+    `;
+
+    for (let row of results) {
+      html += `
+        <tr>
+          <td>${row.id}</td>
+          <td>${row.cliente}</td>
+          <td>${row.telefono}</td>
+          <td>${row.direccion}</td>
+          <td>${row.pago}</td>
+          <td>${row.producto}</td>
+          <td>${row.cantidad}</td>
+          <td>${row.fecha}</td>
+        </tr>
+      `;
+    }
+
+    html += "</table>";
+    res.send(html);
   });
 });
+
