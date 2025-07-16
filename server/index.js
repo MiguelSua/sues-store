@@ -41,9 +41,11 @@ app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
 
   const fechaColombia = new Date().toLocaleString("en-CA", {
-  timeZone: "America/Bogota",
-  hour12: false
-}).replace(", ", "T"); // Resultado: '2025-07-15T14:38:00'
+    timeZone: "America/Bogota",
+    hour12: false
+  }).replace(", ", "T");
+
+  console.log("🕒 Fecha Colombia:", fechaColombia);
 
   const query = `
     INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fechaColombia)
