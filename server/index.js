@@ -4,6 +4,9 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Parser } = require("json2csv");
+const fechaColombia = new Date().toLocaleString("sv-SE", {
+  timeZone: "America/Bogota"
+}).replace(" ", "T"); // formato compatible con MySQL
 
 
 const app = express();
@@ -40,7 +43,7 @@ app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
 
   const query = `
-    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
+    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fechaColombia)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
 
