@@ -4,7 +4,12 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Parser } = require("json2csv");
+const fechaColombia = new Date().toLocaleString("en-CA", {
+    timeZone: "America/Bogota",
+    hour12: false
+ }).replace(", ", "T");
 
+  console.log("🕒 Fecha Colombia:", fechaColombia);
 
 
 const app = express();
@@ -39,13 +44,6 @@ db.connect((err) => {
 
 app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
-
-  const fechaColombia = new Date().toLocaleString("en-CA", {
-    timeZone: "America/Bogota",
-    hour12: false
-  }).replace(", ", "T");
-
-  console.log("🕒 Fecha Colombia:", fechaColombia);
 
   const query = `
     INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
@@ -108,7 +106,7 @@ app.get("/pedidos", (req, res) => {
           <td>${row.pago}</td>
           <td>${row.producto}</td>
           <td>${row.cantidad}</td>
-          <td>${row.fecha}</td>
+          <td>${row.fechaColombia}</td>
           <td>
             <button onclick="eliminarPedido(${row.id})">❌ Eliminar</button>
           </td>
