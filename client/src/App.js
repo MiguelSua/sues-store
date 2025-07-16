@@ -26,31 +26,40 @@ function App() {
   const [reservas, setReservas] = useState([]);
 
   useEffect(() => {
-    if (fechaSeleccionada) {
-      axios
-        .get(`https://sues-store-production.up.railway.app/citas?fecha=${fechaSeleccionada}`)
-        .then((res) => setHorasOcupadas(res.data.map((r) => r.hora)))
-        .catch((err) => console.error("Error cargando reservas:", err));
-    }
-  }, [fechaSeleccionada]);
+  if (fechaSeleccionada) {
+    axios
+      .get("https://sues-store-production.up.railway.app/pedidos")
+      .then((res) => {
+        const ocupadas = res.data
+          .filter(p => p.direccion === fechaSeleccionada && p.producto === "Cita de barbería")
+          .map(p => p.pago);
+        setHorasOcupadas(ocupadas);
+      })
+      .catch((err) => console.error("Error cargando reservas:", err));
+  }
+}, [fechaSeleccionada]);
+
 
   const manejarReserva = (hora) => {
-    const nombre = prompt("Ingresa tu nombre:");
-    const email = prompt("Ingresa tu correo:");
+  const nombre = prompt("Ingresa tu nombre:");
+  const telefono = prompt("Ingresa tu teléfono:");
 
-    axios
-      .post("https://sues-store-production.up.railway.app/citas", {
-        fecha: fechaSeleccionada,
-        hora,
-        nombre,
-        email,
-      })
-      .then(() => {
-        alert("Reserva realizada con éxito.");
-        setHorasOcupadas((prev) => [...prev, hora]);
-      })
-      .catch(() => alert("Error al reservar. Intenta de nuevo."));
-  };
+  axios
+    .post("https://sues-store-production.up.railway.app/pedido", {
+      cliente: nombre,
+      telefono: telefono,
+      direccion: fechaSeleccionada, // usamos esto como fecha de la cita
+      pago: hora,                   // usamos esto como hora de la cita
+      producto: "Cita de barbería",
+      cantidad: 1,
+    })
+    .then(() => {
+      alert("✅ Cita agendada con éxito");
+      setHorasOcupadas((prev) => [...prev, hora]);
+    })
+    .catch(() => alert("❌ Error al reservar. Intenta de nuevo."));
+};
+
 
   const obtenerDiaDeSemana = (fechaStr) => {
     const dias = [
