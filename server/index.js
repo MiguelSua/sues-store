@@ -89,7 +89,7 @@ app.get("/pedidos", (req, res) => {
           <th>Pago</th>
           <th>Producto</th>
           <th>Cantidad</th>
-          <th>Fecha</th>
+          <th>FechaColombia</th>
         </tr>
     `;
 
@@ -103,7 +103,7 @@ app.get("/pedidos", (req, res) => {
           <td>${row.pago}</td>
           <td>${row.producto}</td>
           <td>${row.cantidad}</td>
-          <td>${row.fecha}</td>
+          <td>${row.fechaColombia}</td>
           <td>
             <button onclick="eliminarPedido(${row.id})">❌ Eliminar</button>
           </td>
@@ -228,7 +228,7 @@ app.get("/descargar-csv", (req, res) => {
       return res.status(500).send("Error al obtener pedidos");
     }
 
-    const fields = ["id", "cliente", "telefono", "direccion", "pago", "producto", "cantidad", "fecha"];
+    const fields = ["id", "cliente", "telefono", "direccion", "pago", "producto", "cantidad", "fechaColombia"];
     const parser = new Parser({ fields, delimiter: ";" });
     const csv = parser.parse(results);
 
