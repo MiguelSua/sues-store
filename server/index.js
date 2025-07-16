@@ -219,7 +219,7 @@ app.get("/descargar-csv", (req, res) => {
     return res.status(403).send("Acceso denegado");
   }
 
-  db.query("SELECT * FROM rorders", (err, results) => {
+  db.query("SELECT * FROM orders", (err, results) => {
     if (err) {
       console.error("❌ Error al obtener pedidos para CSV:", err);
       return res.status(500).send("Error al obtener pedidos");
