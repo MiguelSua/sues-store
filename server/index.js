@@ -96,13 +96,56 @@ app.get("/pedidos", (req, res) => {
           <td>${row.producto}</td>
           <td>${row.cantidad}</td>
           <td>${row.fecha}</td>
+          <td>
+            <button onclick="eliminarPedido(${row.id})">❌ Eliminar</button>
+          </td>
+          
         </tr>
       `;
     }
 
     html += "</table>";
+    html += `
+  </table>
+  <script>
+    function eliminarPedido(id) {
+      if (confirm("¿Estás seguro de eliminar el pedido " + id + "?")) {
+        fetch('/eliminar/' + id + '?auth=${process.env.ADMIN_KEY}', {
+          method: 'DELETE'
+        })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          location.reload();
+        })
+        .catch(err => {
+          alert("❌ Error al eliminar");
+          console.error(err);
+        });
+      }
+    }
+  </script>
+`;
     res.send(html);
   });
 });
+
+app.delete("/eliminar/:id", (req, res) => {
+  const { auth } = req.query;
+  const { id } = req.params;
+
+  if (auth !== process.env.ADMIN_KEY) {
+    return res.status(403).send("Acceso denegado");
+  }
+
+  db.query("DELETE FROM orders WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      console.error("❌ Error al eliminar pedido:", err);
+      return res.status(500).send("Error al eliminar");
+    }
+    res.send("✅ Pedido eliminado");
+  });
+});
+
 
 
