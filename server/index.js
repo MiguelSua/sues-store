@@ -40,14 +40,9 @@ db.connect((err) => {
 app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
 
-  const fechaColombia = new Intl.DateTimeFormat('es-CO', {
-    timeZone: 'America/Bogota',
-    dateStyle: 'short',
-    timeStyle: 'medium'
-  }).format(new Date());
 
   const query = `
-    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fechaColombia)
+    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
 
@@ -107,7 +102,7 @@ app.get("/pedidos", (req, res) => {
           <td>${row.pago}</td>
           <td>${row.producto}</td>
           <td>${row.cantidad}</td>
-          <td>${row.fechaColombia}</td>
+          <td>${row.fecha}</td>
           <td>
             <button onclick="eliminarPedido(${row.id})">❌ Eliminar</button>
           </td>
