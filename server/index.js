@@ -57,7 +57,7 @@ app.post("/pedido", (req, res) => {
 });
 
 app.get("/pedidos", (req, res) => {
-  db.query("SELECT * FROM rorders", (err, results) => {
+  db.query("SELECT * FROM orders", (err, results) => {
     if (err) {
       console.error("❌ Error al obtener los pedidos:", err);
       return res.status(500).send("Error al obtener pedidos");
