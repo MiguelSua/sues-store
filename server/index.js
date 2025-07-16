@@ -81,7 +81,7 @@ const enviarCorreo = (pedido) => {
 
 
   const query = `
-    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
+    INSERT INTO citas (cliente, telefono, producto, cantidad, direccion, pago, fecha)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
   
@@ -118,7 +118,7 @@ app.get("/pedidos", (req, res) => {
     return res.status(401).send("No autorizado");
   }
 
-  db.query("SELECT * FROM orders", (err, results) => {
+  db.query("SELECT * FROM citas", (err, results) => {
     if (err) {
       console.error("❌ Error al obtener los pedidos:", err);
       return res.status(500).send("Error al obtener pedidos");
@@ -239,7 +239,7 @@ app.delete("/eliminar/:id", (req, res) => {
     return res.status(403).send("Acceso denegado");
   }
 
-  db.query("DELETE FROM orders WHERE id = ?", [id], (err, result) => {
+  db.query("DELETE FROM citas WHERE id = ?", [id], (err, result) => {
     if (err) {
       console.error("❌ Error al eliminar pedido:", err);
       return res.status(500).send("Error al eliminar");
@@ -255,7 +255,7 @@ app.delete("/eliminar-todos", (req, res) => {
     return res.status(403).send("Acceso denegado");
   }
 
-  db.query("DELETE FROM orders", (err, result) => {
+  db.query("DELETE FROM citas", (err, result) => {
     if (err) {
       console.error("❌ Error al eliminar todos los pedidos:", err);
       return res.status(500).send("Error al eliminar todos");
@@ -271,7 +271,7 @@ app.get("/descargar-csv", (req, res) => {
     return res.status(403).send("Acceso denegado");
   }
 
-  db.query("SELECT * FROM orders", (err, results) => {
+  db.query("SELECT * FROM citas", (err, results) => {
     if (err) {
       console.error("❌ Error al obtener pedidos para CSV:", err);
       return res.status(500).send("Error al obtener pedidos");
@@ -287,13 +287,7 @@ app.get("/descargar-csv", (req, res) => {
   });
 });
 
-db.query("DROP TABLE IF EXISTS orders", (err) => {
-  if (err) {
-    console.error("❌ Error al eliminar tabla:", err);
-  } else {
-    console.log("✅ Tabla 'orders' eliminada");
-  }
-});
+
 
 
 
