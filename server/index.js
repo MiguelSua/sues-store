@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const { Parser } = require("json2csv");
 
 
 const app = express();
@@ -208,6 +209,34 @@ app.delete("/eliminar-todos", (req, res) => {
       return res.status(500).send("Error al eliminar todos");
     }
     res.send("✅ Todos los pedidos eliminados");
+  });
+});
+
+app.get("/descargar-csv", (req, res) => {
+  const auth = req.query.auth;
+
+  if (auth !== process.env.ADMIN_KEY) {
+    return res.status(401).send("No autorizado");
+  }
+
+  db.query("SELECT * FROM orders", (err, results) => {
+    if (err) {
+      console.error("❌ Error al generar CSV:", err);
+      return res.status(500).send("Error al generar CSV");
+    }
+
+    try {
+      const fields = ["id", "cliente", "telefono", "direccion", "pago", "producto", "cantidad", "fecha"];
+      const parser = new Parser({ fields });
+      const csv = parser.parse(results);
+
+      res.header("Content-Type", "text/csv");
+      res.attachment("pedidos.csv");
+      return res.send(csv);
+    } catch (parseErr) {
+      console.error("❌ Error al parsear CSV:", parseErr);
+      return res.status(500).send("Error al generar CSV");
+    }
   });
 });
 
