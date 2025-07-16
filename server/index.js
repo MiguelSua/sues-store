@@ -95,15 +95,7 @@ const enviarCorreo = (pedido) => {
         res.status(500).json({ mensaje: "Error al registrar el pedido" });
       } else {
 
-        enviarCorreo({
-  cliente,
-  telefono,
-  direccion,
-  pago,
-  producto,
-  cantidad,
-});
-
+        
         res.status(200).json({ mensaje: "✅ Pedido registrado con éxito", id: result.insertId });
       }
     }
@@ -286,9 +278,6 @@ app.get("/descargar-csv", (req, res) => {
     res.send("\uFEFF" + csv); // BOM para Excel
   });
 });
-
-
-
 
 
 
