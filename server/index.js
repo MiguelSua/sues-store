@@ -48,7 +48,7 @@ app.post("/pedido", (req, res) => {
   console.log("🕒 Fecha Colombia:", fechaColombia);
 
   const query = `
-    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fechaColombia)
+    INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fecha)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
   `;
 
