@@ -4,9 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Parser } = require("json2csv");
-const fechaColombia = new Date().toLocaleString("sv-SE", {
-  timeZone: "America/Bogota"
-}).replace(" ", "T"); // formato compatible con MySQL
+
 
 
 const app = express();
@@ -41,6 +39,11 @@ db.connect((err) => {
 
 app.post("/pedido", (req, res) => {
   const { cliente, telefono, producto, cantidad, direccion, pago } = req.body;
+
+  const fechaColombia = new Date().toLocaleString("en-CA", {
+  timeZone: "America/Bogota",
+  hour12: false
+}).replace(", ", "T"); // Resultado: '2025-07-15T14:38:00'
 
   const query = `
     INSERT INTO orders (cliente, telefono, producto, cantidad, direccion, pago, fechaColombia)
