@@ -89,7 +89,7 @@ app.get("/pedidos", (req, res) => {
           <th>Pago</th>
           <th>Producto</th>
           <th>Cantidad</th>
-          <th>FechaColombia</th>
+          <th>Fecha</th>
         </tr>
     `;
 
