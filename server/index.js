@@ -368,6 +368,18 @@ app.get("/descargar-csv", (req, res) => {
   });
 });
 
+app.get("/citas-debug", (req, res) => {
+  db.query("SELECT * FROM appointments", (err, result) => {
+    if (err) {
+      console.error("Error al obtener citas:", err);
+      return res.status(500).json({ error: "Error" });
+    }
+    console.log("Citas guardadas:", result);
+    res.json(result);
+  });
+});
+
+
 
 
 
