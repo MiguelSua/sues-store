@@ -30,7 +30,7 @@ function App() {
       .get("https://sues-store-production.up.railway.app/citas")
       .then((res) => {
         const ocupadas = res.data
-          .filter((cita) => cita.fecha === fechaSeleccionada)
+          .filter((cita) => cita.fecha?.slice(0, 10) === fechaSeleccionada)
           .map((cita) => cita.hora); // extraer horas ocupadas
         setHorasOcupadas(ocupadas);
       })
