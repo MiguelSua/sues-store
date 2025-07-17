@@ -30,13 +30,6 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT
 });
 
-const nuevaCita = {
-  cliente: req.body.cliente,
-  correo: req.body.correo,
-  fecha: req.body.fecha,
-  hora: req.body.hora,
-  created_at: new Date().toISOString() // guarda fecha y hora como texto
-};
 
 
 db.connect((err) => {
