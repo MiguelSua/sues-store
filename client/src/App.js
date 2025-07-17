@@ -43,24 +43,25 @@ function App() {
   }, [fechaSeleccionada]);
 
   const manejarReserva = (hora) => {
-    const nombre = prompt("Ingresa tu nombre:");
-    const telefono = prompt("Ingresa tu teléfono:");
+  const cliente = prompt("Ingresa tu nombre:");
+  const telefono = prompt("Ingresa tu teléfono:");
+  const correo = prompt("Ingresa tu correo (opcional):");
 
-    axios
-      .post("https://sues-store-production.up.railway.app/pedido", {
-        cliente: nombre,
-        telefono: telefono,
-        direccion: fechaSeleccionada,
-        pago: hora,
-        producto: "Cita de barbería",
-        cantidad: 1,
-      })
-      .then(() => {
-        alert("✅ Cita agendada con éxito");
-        setHorasOcupadas((prev) => [...prev, hora]);
-      })
-      .catch(() => alert("❌ Error al reservar. Intenta de nuevo."));
-  };
+  axios
+    .post("https://sues-store-production.up.railway.app/cita", {
+      cliente,
+      telefono,
+      correo,
+      fecha: fechaSeleccionada,
+      hora,
+    })
+    .then(() => {
+      alert("✅ Cita agendada con éxito");
+      setHorasOcupadas((prev) => [...prev, hora]);
+    })
+    .catch(() => alert("❌ Error al reservar. Intenta de nuevo."));
+};
+
 
   const obtenerDiaDeSemana = (fechaStr) => {
     const dias = [
