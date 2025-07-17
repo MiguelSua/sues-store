@@ -23,43 +23,44 @@ function generarHoras(inicio, fin) {
 function App() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
   const [horasOcupadas, setHorasOcupadas] = useState([]);
-  const [reservas, setReservas] = useState([]);
 
   useEffect(() => {
-  if (fechaSeleccionada) {
-    axios
-      .get("https://sues-store-production.up.railway.app/pedidos")
-      .then((res) => {
-        const ocupadas = res.data
-          .filter(p => p.direccion === fechaSeleccionada && p.producto === "Cita de barbería")
-          .map(p => p.pago);
-        setHorasOcupadas(ocupadas);
-      })
-      .catch((err) => console.error("Error cargando reservas:", err));
-  }
-}, [fechaSeleccionada]);
-
+    if (fechaSeleccionada) {
+      axios
+        .get("https://sues-store-production.up.railway.app/pedidos")
+        .then((res) => {
+          const ocupadas = res.data
+            .filter(
+              (p) =>
+                p.producto === "Cita de barbería" &&
+                p.direccion === fechaSeleccionada
+            )
+            .map((p) => p.pago); // extraer las horas ocupadas
+          setHorasOcupadas(ocupadas);
+        })
+        .catch((err) => console.error("Error cargando reservas:", err));
+    }
+  }, [fechaSeleccionada]);
 
   const manejarReserva = (hora) => {
-  const nombre = prompt("Ingresa tu nombre:");
-  const telefono = prompt("Ingresa tu teléfono:");
+    const nombre = prompt("Ingresa tu nombre:");
+    const telefono = prompt("Ingresa tu teléfono:");
 
-  axios
-    .post("https://sues-store-production.up.railway.app/pedido", {
-      cliente: nombre,
-      telefono: telefono,
-      direccion: fechaSeleccionada, // usamos esto como fecha de la cita
-      pago: hora,                   // usamos esto como hora de la cita
-      producto: "Cita de barbería",
-      cantidad: 1,
-    })
-    .then(() => {
-      alert("✅ Cita agendada con éxito");
-      setHorasOcupadas((prev) => [...prev, hora]);
-    })
-    .catch(() => alert("❌ Error al reservar. Intenta de nuevo."));
-};
-
+    axios
+      .post("https://sues-store-production.up.railway.app/pedido", {
+        cliente: nombre,
+        telefono: telefono,
+        direccion: fechaSeleccionada,
+        pago: hora,
+        producto: "Cita de barbería",
+        cantidad: 1,
+      })
+      .then(() => {
+        alert("✅ Cita agendada con éxito");
+        setHorasOcupadas((prev) => [...prev, hora]);
+      })
+      .catch(() => alert("❌ Error al reservar. Intenta de nuevo."));
+  };
 
   const obtenerDiaDeSemana = (fechaStr) => {
     const dias = [
@@ -77,6 +78,7 @@ function App() {
   return (
     <div className="App">
       <h1>SUES Barbershop 💈</h1>
+
       <input
         type="date"
         value={fechaSeleccionada}
@@ -87,16 +89,20 @@ function App() {
         <>
           <h2>Horarios disponibles para {fechaSeleccionada}:</h2>
           <ul>
-            {(horasPorDia[obtenerDiaDeSemana(fechaSeleccionada)] || []).map((hora) => (
-              <li key={hora}>
-                {hora}{" "}
-                {horasOcupadas.includes(hora) ? (
-                  <span style={{ color: "red" }}> (Ocupado)</span>
-                ) : (
-                  <button onClick={() => manejarReserva(hora)}>Reservar</button>
-                )}
-              </li>
-            ))}
+            {(horasPorDia[obtenerDiaDeSemana(fechaSeleccionada)] || []).map(
+              (hora) => (
+                <li key={hora}>
+                  {hora}{" "}
+                  {horasOcupadas.includes(hora) ? (
+                    <span style={{ color: "red" }}> (Ocupado)</span>
+                  ) : (
+                    <button onClick={() => manejarReserva(hora)}>
+                      Reservar
+                    </button>
+                  )}
+                </li>
+              )
+            )}
           </ul>
         </>
       )}
@@ -105,4 +111,3 @@ function App() {
 }
 
 export default App;
-
