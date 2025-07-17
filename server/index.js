@@ -87,7 +87,7 @@ app.post("/pedido", (req, res) => {
 });
 
 // Ruta para agendar cita
-app.post("/cita", (req, res) => {
+app.post("/citas", (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
 
   const query = `
