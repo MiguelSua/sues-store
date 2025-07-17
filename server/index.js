@@ -30,6 +30,15 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT
 });
 
+const nuevaCita = {
+  cliente: req.body.cliente,
+  correo: req.body.correo,
+  fecha: req.body.fecha,
+  hora: req.body.hora,
+  created_at: new Date().toISOString() // guarda fecha y hora como texto
+};
+
+
 db.connect((err) => {
   if (err) {
     console.error("❌ Error al conectar a la base de datos:", err);
@@ -51,6 +60,51 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
+
+app.post("/cita", (req, res) => {
+  const { cliente, correo, telefono, fecha, hora } = req.body;
+
+  const query = `
+    INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    query,
+    [cliente, correo, telefono, fecha, hora, new Date().toISOString()],
+    (err, result) => {
+      if (err) {
+        console.error("❌ Error al registrar cita:", err);
+        return res.status(500).json({ mensaje: "Error al registrar la cita" });
+      }
+
+      res.status(200).json({
+        mensaje: "✅ Cita registrada con éxito",
+        id: result.insertId,
+      });
+    }
+  );
+});
+
+app.get("/citas", (req, res) => {
+  const { fecha } = req.query;
+
+  if (!fecha) return res.status(400).json({ mensaje: "Falta la fecha" });
+
+  const query = "SELECT hora FROM appointments WHERE fecha = ?";
+
+  db.query(query, [fecha], (err, results) => {
+    if (err) {
+      console.error("❌ Error al obtener citas:", err);
+      return res.status(500).json({ mensaje: "Error al obtener citas" });
+    }
+
+    const horasOcupadas = results.map((row) => row.hora);
+    res.status(200).json(horasOcupadas);
+  });
+});
+
+
 
 // Después de guardar el pedido en la base de datos
 const enviarCorreo = (pedido) => {
@@ -286,6 +340,7 @@ app.get("/descargar-csv", (req, res) => {
     res.send("\uFEFF" + csv); // BOM para Excel
   });
 });
+
 
 
 
