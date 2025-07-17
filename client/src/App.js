@@ -45,7 +45,7 @@ function App() {
   const correo = prompt("Ingresa tu correo (opcional):");
 
   axios
-    .post("https://sues-store-production.up.railway.app/cita", {
+    .post("https://sues-store-production.up.railway.app/citas", {
       cliente,
       telefono,
       correo,
