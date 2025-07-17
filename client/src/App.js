@@ -25,22 +25,19 @@ function App() {
   const [horasOcupadas, setHorasOcupadas] = useState([]);
 
   useEffect(() => {
-    if (fechaSeleccionada) {
-      axios
-        .get("https://sues-store-production.up.railway.app/pedidos")
-        .then((res) => {
-          const ocupadas = res.data
-            .filter(
-              (p) =>
-                p.producto === "Cita de barbería" &&
-                p.direccion === fechaSeleccionada
-            )
-            .map((p) => p.pago); // extraer las horas ocupadas
-          setHorasOcupadas(ocupadas);
-        })
-        .catch((err) => console.error("Error cargando reservas:", err));
-    }
-  }, [fechaSeleccionada]);
+  if (fechaSeleccionada) {
+    axios
+      .get("https://sues-store-production.up.railway.app/citas")
+      .then((res) => {
+        const ocupadas = res.data
+          .filter((cita) => cita.fecha === fechaSeleccionada)
+          .map((cita) => cita.hora); // extraer horas ocupadas
+        setHorasOcupadas(ocupadas);
+      })
+      .catch((err) => console.error("Error cargando citas:", err));
+  }
+}, [fechaSeleccionada]);
+
 
   const manejarReserva = (hora) => {
   const cliente = prompt("Ingresa tu nombre:");
