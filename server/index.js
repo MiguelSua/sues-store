@@ -62,19 +62,19 @@ app.post("/cita", (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
+  const fechaActual = new Date().toISOString();
+
   db.query(
     query,
-    [cliente, correo, telefono, fecha, hora, new Date().toISOString()],
-    (err, result) => {
-      if (err) {
-        console.error("❌ Error al registrar cita:", err);
-        return res.status(500).json({ mensaje: "Error al registrar la cita" });
+    [cliente, correo, telefono, fecha, hora, fechaActual],
+    (error, result) => {
+      if (error) {
+        console.error("❌ Error al guardar cita:", error);
+        res.status(500).send("Error al guardar la cita");
+      } else {
+        console.log("✅ Cita guardada con éxito");
+        res.status(200).send("Cita guardada");
       }
-
-      res.status(200).json({
-        mensaje: "✅ Cita registrada con éxito",
-        id: result.insertId,
-      });
     }
   );
 });
