@@ -105,6 +105,8 @@ app.get('/todas-las-citas', (req, res) => {
       return res.status(500).send("<h1>Error al obtener citas</h1>");
     }
 
+    let citasJson = JSON.stringify(results);
+
     let html = `
       <html>
         <head>
@@ -117,6 +119,12 @@ app.get('/todas-las-citas', (req, res) => {
             }
             h1 {
               text-align: center;
+            }
+            #fechaInput {
+              display: block;
+              margin: 0 auto 20px auto;
+              padding: 10px;
+              font-size: 16px;
             }
             table {
               border-collapse: collapse;
@@ -136,11 +144,18 @@ app.get('/todas-las-citas', (req, res) => {
             tr:nth-child(even) {
               background-color: #f9f9f9;
             }
+            #sinResultados {
+              text-align: center;
+              margin-top: 20px;
+              font-weight: bold;
+            }
           </style>
         </head>
         <body>
           <h1>Listado de Citas Agendadas</h1>
-          <table>
+          <input type="date" id="fechaInput" />
+
+          <table id="tablaCitas">
             <thead>
               <tr>
                 <th>ID</th>
@@ -150,24 +165,44 @@ app.get('/todas-las-citas', (req, res) => {
                 <th>Hora</th>
               </tr>
             </thead>
-            <tbody>
-    `;
-
-    results.forEach(cita => {
-      html += `
-        <tr>
-          <td>${cita.id}</td>
-          <td>${cita.cliente}</td>
-          <td>${cita.correo}</td>
-          <td>${cita.fecha}</td>
-          <td>${cita.hora}</td>
-        </tr>
-      `;
-    });
-
-    html += `
+            <tbody id="tbodyCitas">
+              <!-- Aquí se cargan las filas dinámicamente -->
             </tbody>
           </table>
+
+          <p id="sinResultados" style="display: none;">No hay citas para esta fecha.</p>
+
+          <script>
+            const citas = ${citasJson};
+
+            const inputFecha = document.getElementById('fechaInput');
+            const tbody = document.getElementById('tbodyCitas');
+            const sinResultados = document.getElementById('sinResultados');
+
+            inputFecha.addEventListener('change', () => {
+              const fechaSeleccionada = inputFecha.value;
+              const citasFiltradas = citas.filter(cita => cita.fecha === fechaSeleccionada);
+
+              tbody.innerHTML = '';
+
+              if (citasFiltradas.length === 0) {
+                sinResultados.style.display = 'block';
+              } else {
+                sinResultados.style.display = 'none';
+                citasFiltradas.forEach(cita => {
+                  const fila = document.createElement('tr');
+                  fila.innerHTML = \`
+                    <td>\${cita.id}</td>
+                    <td>\${cita.cliente}</td>
+                    <td>\${cita.correo}</td>
+                    <td>\${cita.fecha}</td>
+                    <td>\${cita.hora}</td>
+                  \`;
+                  tbody.appendChild(fila);
+                });
+              }
+            });
+          </script>
         </body>
       </html>
     `;
@@ -175,6 +210,7 @@ app.get('/todas-las-citas', (req, res) => {
     res.send(html);
   });
 });
+
 
 
 
