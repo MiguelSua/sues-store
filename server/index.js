@@ -3,6 +3,8 @@ const mysql = require('mysql2');
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(cors());
@@ -34,6 +36,15 @@ db.connect((err) => {
   }
 });
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+
 app.post("/citas", (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
   const fechaActual = new Date().toISOString();
@@ -55,23 +66,50 @@ app.post("/citas", (req, res) => {
       return res.status(409).send("La hora ya está ocupada");
     }
 
+        // Generar token único
+    const token = crypto.randomBytes(16).toString("hex");
+
     // Si no hay cita, entonces insertar
     const insertarQuery = `
-      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
+      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(
+
+   db.query(
       insertarQuery,
-      [cliente, correo, telefono, fecha, hora, fechaActual],
+      [cliente, correo, telefono, fecha, hora, fechaActual, token],
       (error, result) => {
         if (error) {
           console.error("❌ Error al guardar cita:", error);
           return res.status(500).send("Error al guardar la cita");
-        } else {
-          console.log("✅ Cita guardada con éxito");
-          return res.status(200).send("Cita guardada");
         }
+
+        // Enlace de cancelación
+        const cancelUrl = `https://TU_DOMINIO/cancelar-cita/${result.insertId}?token=${token}`;
+
+        // Enviar correo
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: correo,
+          subject: "Cita agendada – Sues Barber Shop",
+          html: `
+            <p>Hola ${cliente},</p>
+            <p>Tu cita ha sido agendada para el <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+            <p>Si deseas cancelar tu cita, haz clic en el siguiente enlace:</p>
+            <p><a href="${cancelUrl}">Cancelar mi cita</a></p>
+            <p>Gracias por confiar en Sues Barber Shop.</p>
+          `
+        };
+
+        transporter.sendMail(mailOptions, (mailErr, info) => {
+          if (mailErr) {
+            console.error("❌ Error al enviar correo:", mailErr);
+            return res.status(500).send("Cita guardada pero no se pudo enviar el correo");
+          }
+          console.log("✅ Correo enviado:", info.response);
+          return res.status(200).send("Cita guardada y correo enviado");
+        });
       }
     );
   });
@@ -210,6 +248,38 @@ app.get('/todas-las-citas', (req, res) => {
     res.send(html);
   });
 });
+
+app.get("/cancelar-cita/:id", (req, res) => {
+  const id = req.params.id;
+  const token = req.query.token;
+
+  if (!token) {
+    return res.status(400).send("<h1>Error: token no proporcionado</h1>");
+  }
+
+  const checkQuery = "SELECT * FROM appointments WHERE id = ? AND token = ?";
+  db.query(checkQuery, [id, token], (err, results) => {
+    if (err) {
+      console.error("Error al buscar la cita:", err);
+      return res.status(500).send("<h1>Error del servidor</h1>");
+    }
+
+    if (results.length === 0) {
+      return res.status(404).send("<h1>Cita no encontrada o token inválido</h1>");
+    }
+
+    const deleteQuery = "DELETE FROM appointments WHERE id = ?";
+    db.query(deleteQuery, [id], (err2) => {
+      if (err2) {
+        console.error("Error al eliminar la cita:", err2);
+        return res.status(500).send("<h1>Error al cancelar la cita</h1>");
+      }
+
+      res.send("<h1>Tu cita ha sido cancelada exitosamente</h1>");
+    });
+  });
+});
+
 
 
 
