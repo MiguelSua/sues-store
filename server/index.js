@@ -48,9 +48,8 @@ const transporter = nodemailer.createTransport({
 app.post("/citas", (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
   const fechaActual = new Date().toISOString();
-  const token = crypto.randomBytes(16).toString("hex"); // Genera token único
 
-  // Verificar si ya hay una cita en esa fecha y hora
+  // Primero verificar si ya existe una cita en esa fecha y hora
   const verificarQuery = `
     SELECT * FROM appointments
     WHERE fecha = ? AND hora = ?
@@ -63,56 +62,31 @@ app.post("/citas", (req, res) => {
     }
 
     if (results.length > 0) {
+      // Ya hay una cita para esa fecha y hora
       return res.status(409).send("La hora ya está ocupada");
     }
 
-    // Insertar nueva cita con token
+    // Si no hay cita, entonces insertar
     const insertarQuery = `
-      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
       insertarQuery,
-      [cliente, correo, telefono, fecha, hora, fechaActual, token],
+      [cliente, correo, telefono, fecha, hora, fechaActual],
       (error, result) => {
         if (error) {
           console.error("❌ Error al guardar cita:", error);
           return res.status(500).send("Error al guardar la cita");
+        } else {
+          console.log("✅ Cita guardada con éxito");
+          return res.status(200).send("Cita guardada");
         }
-
-        console.log("✅ Cita guardada con éxito");
-
-        // Enviar correo con el enlace de cancelación
-        const cancelLink = `https://sues-barbershop.vercel.app/cancelar/${token}`; // Ajusta esto a tu frontend real
-
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: correo,
-          subject: "Confirmación de cita - Sue's Barbershop",
-          html: `
-            <p>Hola ${cliente},</p>
-            <p>Tu cita para el <strong>${fecha}</strong> a las <strong>${hora}</strong> ha sido agendada con éxito.</p>
-            <p>Si deseas cancelar tu cita, haz clic en el siguiente enlace:</p>
-            <a href="${cancelLink}">Cancelar cita</a>
-            <p>Gracias por preferirnos.</p>
-          `
-        };
-
-        transporter.sendMail(mailOptions, (emailErr, info) => {
-          if (emailErr) {
-            console.error("❌ Error al enviar correo:", emailErr);
-            return res.status(500).send("Cita guardada, pero error al enviar correo");
-          } else {
-            console.log("✅ Correo enviado:", info.response);
-            return res.status(200).send("Cita guardada");
-          }
-        });
       }
     );
   });
 });
-
 
 // Ruta para obtener horas ocupadas en una fecha
 app.get("/citas", (req, res) => {
@@ -245,26 +219,6 @@ app.get('/todas-las-citas', (req, res) => {
     `;
 
     res.send(html);
-  });
-});
-
-app.delete("/cancelar/:token", (req, res) => {
-  const { token } = req.params;
-
-  const query = "DELETE FROM appointments WHERE token = ?";
-
-  db.query(query, [token], (err, result) => {
-    if (err) {
-      console.error("❌ Error al cancelar cita:", err);
-      return res.status(500).send("Error al cancelar la cita");
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).send("Token inválido o cita no encontrada");
-    }
-
-    console.log("✅ Cita cancelada con éxito");
-    res.status(200).send("Cita cancelada con éxito");
   });
 });
 

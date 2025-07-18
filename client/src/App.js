@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
-
 // Genera arreglo de horas con formato "HH:00"
 const generarHoras = (inicio, fin) => {
   const horas = [];
@@ -130,5 +129,4 @@ function App() {
 }
 
 export default App;
-
 
