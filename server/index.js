@@ -96,75 +96,86 @@ app.get("/citas", (req, res) => {
   });
 });
 
-// Ruta para ver todas las citas (debug)
-app.get("/citas-debug", (req, res) => {
-  db.query("SELECT * FROM appointments", (err, result) => {
+app.get('/todas-las-citas', (req, res) => {
+  const query = "SELECT * FROM appointments ORDER BY fecha, hora";
+
+  db.query(query, (err, results) => {
     if (err) {
       console.error("Error al obtener citas:", err);
-      return res.status(500).json({ error: "Error" });
-    }
-    console.log("Citas guardadas:", result);
-    res.json(result);
-  });
-});
-
-app.get("/citas", (req, res) => {
-  const query = "SELECT * FROM appointments ORDER BY fecha DESC, hora ASC";
-
-  connection.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).send("Error al obtener las citas.");
+      return res.status(500).send("<h1>Error al obtener citas</h1>");
     }
 
     let html = `
       <html>
-      <head>
-        <title>Citas Agendadas</title>
-        <style>
-          body { font-family: Arial; background-color: #111; color: #fff; padding: 20px; }
-          table { border-collapse: collapse; width: 100%; background: #1e1e2f; border-radius: 10px; overflow: hidden; }
-          th, td { border: 1px solid #333; padding: 12px; text-align: center; }
-          th { background-color: #222; }
-          tr:nth-child(even) { background-color: #2c2c3c; }
-        </style>
-      </head>
-      <body>
-        <h2>Citas Agendadas</h2>
-        <table>
-          <tr>
-            <th>id</th>
-            <th>cliente</th>
-            <th>telefono</th>
-            <th>fecha</th>
-            <th>hora</th>
-            <th>created_at</th>
-            <th>correo</th>
-          </tr>
+        <head>
+          <title>Listado de Citas</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f4f4f4;
+              padding: 20px;
+            }
+            h1 {
+              text-align: center;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              background-color: white;
+              box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            th, td {
+              border: 1px solid #ccc;
+              padding: 12px;
+              text-align: left;
+            }
+            th {
+              background-color: #222;
+              color: white;
+            }
+            tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Listado de Citas Agendadas</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+              </tr>
+            </thead>
+            <tbody>
     `;
 
-    results.forEach(row => {
+    results.forEach(cita => {
       html += `
         <tr>
-          <td>${row.id}</td>
-          <td>${row.cliente || ''}</td>
-          <td>${row.telefono || ''}</td>
-          <td>${row.fecha}</td>
-          <td>${row.hora}</td>
-          <td>${row.created_at}</td>
-          <td>${row.correo || ''}</td>
+          <td>${cita.id}</td>
+          <td>${cita.nombre}</td>
+          <td>${cita.correo}</td>
+          <td>${cita.fecha}</td>
+          <td>${cita.hora}</td>
         </tr>
       `;
     });
 
     html += `
-        </table>
-      </body>
+            </tbody>
+          </table>
+        </body>
       </html>
     `;
 
     res.send(html);
   });
 });
+
 
 
 
