@@ -48,8 +48,9 @@ const transporter = nodemailer.createTransport({
 app.post("/citas", (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
   const fechaActual = new Date().toISOString();
+  const token = crypto.randomBytes(16).toString("hex"); // Genera token único
 
-  // Primero verificar si ya existe una cita en esa fecha y hora
+  // Verificar si ya hay una cita en esa fecha y hora
   const verificarQuery = `
     SELECT * FROM appointments
     WHERE fecha = ? AND hora = ?
@@ -62,21 +63,16 @@ app.post("/citas", (req, res) => {
     }
 
     if (results.length > 0) {
-      // Ya hay una cita para esa fecha y hora
       return res.status(409).send("La hora ya está ocupada");
     }
 
-        // Generar token único
-    const token = crypto.randomBytes(16).toString("hex");
-
-    // Si no hay cita, entonces insertar
+    // Insertar nueva cita con token
     const insertarQuery = `
       INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
-
-   db.query(
+    db.query(
       insertarQuery,
       [cliente, correo, telefono, fecha, hora, fechaActual, token],
       (error, result) => {
@@ -85,35 +81,38 @@ app.post("/citas", (req, res) => {
           return res.status(500).send("Error al guardar la cita");
         }
 
-        // Enlace de cancelación
-        const cancelUrl = `https://sues-barbershop.vercel.app/cancelar-cita/${result.insertId}?token=${token}`;
+        console.log("✅ Cita guardada con éxito");
 
-        // Enviar correo
+        // Enviar correo con el enlace de cancelación
+        const cancelLink = `https://sues-barbershop.vercel.app/cancelar/${token}`; // Ajusta esto a tu frontend real
+
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: correo,
-          subject: "Cita agendada – Sues Barber Shop",
+          subject: "Confirmación de cita - Sue's Barbershop",
           html: `
             <p>Hola ${cliente},</p>
-            <p>Tu cita ha sido agendada para el <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+            <p>Tu cita para el <strong>${fecha}</strong> a las <strong>${hora}</strong> ha sido agendada con éxito.</p>
             <p>Si deseas cancelar tu cita, haz clic en el siguiente enlace:</p>
-            <p><a href="${cancelUrl}">Cancelar mi cita</a></p>
-            <p>Gracias por confiar en Sues Barber Shop.</p>
+            <a href="${cancelLink}">Cancelar cita</a>
+            <p>Gracias por preferirnos.</p>
           `
         };
 
-        transporter.sendMail(mailOptions, (mailErr, info) => {
-          if (mailErr) {
-            console.error("❌ Error al enviar correo:", mailErr);
-            return res.status(500).send("Cita guardada pero no se pudo enviar el correo");
+        transporter.sendMail(mailOptions, (emailErr, info) => {
+          if (emailErr) {
+            console.error("❌ Error al enviar correo:", emailErr);
+            return res.status(500).send("Cita guardada, pero error al enviar correo");
+          } else {
+            console.log("✅ Correo enviado:", info.response);
+            return res.status(200).send("Cita guardada");
           }
-          console.log("✅ Correo enviado:", info.response);
-          return res.status(200).send("Cita guardada y correo enviado");
         });
       }
     );
   });
 });
+
 
 // Ruta para obtener horas ocupadas en una fecha
 app.get("/citas", (req, res) => {
@@ -249,36 +248,26 @@ app.get('/todas-las-citas', (req, res) => {
   });
 });
 
-app.get("/cancelar-cita/:id", (req, res) => {
-  const id = req.params.id;
-  const token = req.query.token;
+app.delete("/cancelar/:token", (req, res) => {
+  const { token } = req.params;
 
-  if (!token) {
-    return res.status(400).send("<h1>Error: token no proporcionado</h1>");
-  }
+  const query = "DELETE FROM appointments WHERE token = ?";
 
-  const checkQuery = "SELECT * FROM appointments WHERE id = ? AND token = ?";
-  db.query(checkQuery, [id, token], (err, results) => {
+  db.query(query, [token], (err, result) => {
     if (err) {
-      console.error("Error al buscar la cita:", err);
-      return res.status(500).send("<h1>Error del servidor</h1>");
+      console.error("❌ Error al cancelar cita:", err);
+      return res.status(500).send("Error al cancelar la cita");
     }
 
-    if (results.length === 0) {
-      return res.status(404).send("<h1>Cita no encontrada o token inválido</h1>");
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Token inválido o cita no encontrada");
     }
 
-    const deleteQuery = "DELETE FROM appointments WHERE id = ?";
-    db.query(deleteQuery, [id], (err2) => {
-      if (err2) {
-        console.error("Error al eliminar la cita:", err2);
-        return res.status(500).send("<h1>Error al cancelar la cita</h1>");
-      }
-
-      res.send("<h1>Tu cita ha sido cancelada exitosamente</h1>");
-    });
+    console.log("✅ Cita cancelada con éxito");
+    res.status(200).send("Cita cancelada con éxito");
   });
 });
+
 
 
 
