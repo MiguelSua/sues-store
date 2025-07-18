@@ -28,7 +28,7 @@ const Checkout = ({ carrito }) => {
 
   return (
     <div>
-      <h3>Confirmar pedido</h3>
+      <h3>Confirmar pedido si</h3>
       <input placeholder="Nombre" value={cliente} onChange={(e) => setCliente(e.target.value)} />
       <input placeholder="Teléfono" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
       <input placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
