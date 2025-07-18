@@ -72,7 +72,7 @@ app.post("/citas", (req, res) => {
     // Si no hay cita, entonces insertar
     const insertarQuery = `
       INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
 
@@ -86,7 +86,7 @@ app.post("/citas", (req, res) => {
         }
 
         // Enlace de cancelación
-        const cancelUrl = `https://TU_DOMINIO/cancelar-cita/${result.insertId}?token=${token}`;
+        const cancelUrl = `https://sues-barbershop.vercel.app/cancelar-cita/${result.insertId}?token=${token}`;
 
         // Enviar correo
         const mailOptions = {
