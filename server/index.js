@@ -108,13 +108,64 @@ app.get("/citas-debug", (req, res) => {
   });
 });
 
-db.query("DROP TABLE IF EXISTS orders", (err) => {
-  if (err) {
-    console.error("❌ Error al eliminar tabla:", err);
-  } else {
-    console.log("✅ Tabla 'orders' eliminada");
-  }
+app.get("/citas", (req, res) => {
+  const query = "SELECT * FROM appointments ORDER BY fecha DESC, hora ASC";
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).send("Error al obtener las citas.");
+    }
+
+    let html = `
+      <html>
+      <head>
+        <title>Citas Agendadas</title>
+        <style>
+          body { font-family: Arial; background-color: #111; color: #fff; padding: 20px; }
+          table { border-collapse: collapse; width: 100%; background: #1e1e2f; border-radius: 10px; overflow: hidden; }
+          th, td { border: 1px solid #333; padding: 12px; text-align: center; }
+          th { background-color: #222; }
+          tr:nth-child(even) { background-color: #2c2c3c; }
+        </style>
+      </head>
+      <body>
+        <h2>Citas Agendadas</h2>
+        <table>
+          <tr>
+            <th>id</th>
+            <th>cliente</th>
+            <th>telefono</th>
+            <th>fecha</th>
+            <th>hora</th>
+            <th>created_at</th>
+            <th>correo</th>
+          </tr>
+    `;
+
+    results.forEach(row => {
+      html += `
+        <tr>
+          <td>${row.id}</td>
+          <td>${row.cliente || ''}</td>
+          <td>${row.telefono || ''}</td>
+          <td>${row.fecha}</td>
+          <td>${row.hora}</td>
+          <td>${row.created_at}</td>
+          <td>${row.correo || ''}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+        </table>
+      </body>
+      </html>
+    `;
+
+    res.send(html);
+  });
 });
+
 
 
 
