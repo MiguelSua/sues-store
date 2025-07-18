@@ -44,11 +44,11 @@ function App() {
   useEffect(() => {
     if (fechaSeleccionada) {
       axios
-        .get("https://sues-store-production.up.railway.app/citas")
+        .get("https://sues-store-production.up.railway.app/citas", {
+          params: { fecha: fechaSeleccionada },
+        })
         .then((res) => {
-          const ocupadas = res.data
-            .filter((cita) => cita.fecha?.slice(0, 10) === fechaSeleccionada)
-            .map((cita) => cita.hora);
+          const ocupadas = res.data;
           setHorasOcupadas(ocupadas);
         })
         .catch((err) => {
@@ -102,24 +102,29 @@ function App() {
       {fechaSeleccionada && (
         <>
           {esFechaPasada(fechaSeleccionada) ? (
-            <p style={{ color: "red" }}>❌ No puedes agendar en fechas pasadas.</p>
+            <p style={{ color: "red" }}>
+              ❌ No puedes agendar en fechas pasadas.
+            </p>
           ) : (
             <>
               <h2>Horarios disponibles para {fechaSeleccionada}:</h2>
               <ul>
                 {(horasPorDia[obtenerDiaDeSemana(fechaSeleccionada)] || []).map(
-                  (hora) => (
-                    <li key={hora}>
-                      {hora}{" "}
-                      {horasOcupadas.includes(hora) ? (
-                        <span style={{ color: "red" }}> (Ocupado)</span>
-                      ) : (
-                        <button onClick={() => manejarReserva(hora)}>
-                          Reservar
-                        </button>
-                      )}
-                    </li>
-                  )
+                  (hora) => {
+                    const ocupado = horasOcupadas.includes(hora);
+                    return (
+                      <li key={hora}>
+                        {hora}{" "}
+                        {ocupado ? (
+                          <span style={{ color: "red" }}> (Ocupado)</span>
+                        ) : (
+                          <button onClick={() => manejarReserva(hora)}>
+                            Reservar
+                          </button>
+                        )}
+                      </li>
+                    );
+                  }
                 )}
               </ul>
             </>
@@ -131,3 +136,5 @@ function App() {
 }
 
 export default App;
+
+
