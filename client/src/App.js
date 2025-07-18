@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
-import ReactDOM from 'react-dom';
 import App from './App';
 import CancelarCita from './CancelarCita';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
