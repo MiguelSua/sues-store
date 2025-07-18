@@ -107,26 +107,19 @@ function App() {
             </p>
           ) : (
             <>
-              <h2>Horarios disponibles para {fechaSeleccionada}:</h2>
-              <ul>
-                {(horasPorDia[obtenerDiaDeSemana(fechaSeleccionada)] || []).map(
-                  (hora) => {
-                    const ocupado = horasOcupadas.includes(hora);
-                    return (
-                      <li key={hora}>
-                        {hora}{" "}
-                        {ocupado ? (
-                          <span style={{ color: "red" }}> (Ocupado)</span>
-                        ) : (
-                          <button onClick={() => manejarReserva(hora)}>
-                            Reservar
-                          </button>
-                        )}
-                      </li>
-                    );
-                  }
-                )}
-              </ul>
+             <h2>Horarios disponibles para {fechaSeleccionada}:</h2>
+             <ul>
+               {(horasPorDia[obtenerDiaDeSemana(fechaSeleccionada)] || [])
+                 .filter((hora) => !horasOcupadas.includes(hora)) // 👈 filtramos los ocupados
+                 .map((hora) => (
+                  <li key={hora}>
+                   {hora}{" "}
+                    <button onClick={() => manejarReserva(hora)}>
+                      Reservar
+                   </button>
+                  </li>
+                 ))}
+             </ul>
             </>
           )}
         </>
