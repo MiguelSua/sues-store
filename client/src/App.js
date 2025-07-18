@@ -3,16 +3,6 @@ import axios from "axios";
 import "./App.css";
 
 
-ReactDOM.render(
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<App />} />
-      <Route path="/cancelar/:token" element={<CancelarCita />} />
-    </Routes>
-  </BrowserRouter>,
-  document.getElementById('root')
-);
-
 // Genera arreglo de horas con formato "HH:00"
 const generarHoras = (inicio, fin) => {
   const horas = [];
