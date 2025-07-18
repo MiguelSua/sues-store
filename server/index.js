@@ -34,30 +34,47 @@ db.connect((err) => {
   }
 });
 
-// Ruta para agendar cita
 app.post("/citas", (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
-
-  const query = `
-    INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
   const fechaActual = new Date().toISOString();
 
-  db.query(
-    query,
-    [cliente, correo, telefono, fecha, hora, fechaActual],
-    (error, result) => {
-      if (error) {
-        console.error("❌ Error al guardar cita:", error);
-        res.status(500).send("Error al guardar la cita");
-      } else {
-        console.log("✅ Cita guardada con éxito");
-        res.status(200).send("Cita guardada");
-      }
+  // Primero verificar si ya existe una cita en esa fecha y hora
+  const verificarQuery = `
+    SELECT * FROM appointments
+    WHERE fecha = ? AND hora = ?
+  `;
+
+  db.query(verificarQuery, [fecha, hora], (err, results) => {
+    if (err) {
+      console.error("❌ Error al verificar cita:", err);
+      return res.status(500).send("Error al verificar disponibilidad");
     }
-  );
+
+    if (results.length > 0) {
+      // Ya hay una cita para esa fecha y hora
+      return res.status(409).send("La hora ya está ocupada");
+    }
+
+    // Si no hay cita, entonces insertar
+    const insertarQuery = `
+      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      insertarQuery,
+      [cliente, correo, telefono, fecha, hora, fechaActual],
+      (error, result) => {
+        if (error) {
+          console.error("❌ Error al guardar cita:", error);
+          return res.status(500).send("Error al guardar la cita");
+        } else {
+          console.log("✅ Cita guardada con éxito");
+          return res.status(200).send("Cita guardada");
+        }
+      }
+    );
+  });
 });
 
 // Ruta para obtener horas ocupadas en una fecha
