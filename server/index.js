@@ -108,6 +108,21 @@ app.get("/citas-debug", (req, res) => {
   });
 });
 
+app.delete("/eliminar-orders", (req, res) => {
+  const query = `DROP TABLE IF EXISTS orders`;
+
+  db.query(query, (error, result) => {
+    if (error) {
+      console.error("❌ Error al eliminar la tabla:", error);
+      res.status(500).send("Error al eliminar la tabla 'orders'");
+    } else {
+      console.log("✅ Tabla 'orders' eliminada exitosamente.");
+      res.status(200).send("Tabla 'orders' eliminada con éxito");
+    }
+  });
+});
+
+
 
 
 
