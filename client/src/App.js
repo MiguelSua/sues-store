@@ -79,7 +79,7 @@ function App() {
       setHorasOcupadas((prev) => [...prev, hora]);
     } catch (err) {
       console.error("Error al guardar cita:", err);
-      alert("❌ No se pudo guardar la cita. Intenta nuevamente.");
+      alert("❌ No se pudo guardar la cita o alguien acaba de reservarla. Intenta nuevamente.");
     }
   };
 
