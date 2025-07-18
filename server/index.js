@@ -67,24 +67,51 @@ app.post("/citas", (req, res) => {
     }
 
     // Si no hay cita, entonces insertar
-    const insertarQuery = `
-      INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+    const token = crypto.randomBytes(20).toString("hex");
+const cancelarUrl = `https://sues-store-production.up.railway.app/cancelar-cita/${token}`;
 
-    db.query(
-      insertarQuery,
-      [cliente, correo, telefono, fecha, hora, fechaActual],
-      (error, result) => {
-        if (error) {
-          console.error("❌ Error al guardar cita:", error);
-          return res.status(500).send("Error al guardar la cita");
-        } else {
-          console.log("✅ Cita guardada con éxito");
-          return res.status(200).send("Cita guardada");
-        }
+const insertarQuery = `
+  INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
+  VALUES (?, ?, ?, ?, ?, ?, ?)
+`;
+
+db.query(
+  insertarQuery,
+  [cliente, correo, telefono, fecha, hora, fechaActual, token],
+  (error, result) => {
+    if (error) {
+      console.error("❌ Error al guardar cita:", error);
+      return res.status(500).send("Error al guardar la cita");
+    } else {
+      console.log("✅ Cita guardada con éxito");
+
+      if (correo) {
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: correo,
+          subject: "Confirmación de tu cita - SUES Barbershop 💈",
+          html: `
+            <p>Hola ${cliente}, tu cita fue agendada para el <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+            <p>Si deseas cancelar tu cita, haz clic en el siguiente enlace:</p>
+            <a href="${cancelarUrl}">${cancelarUrl}</a>
+            <p>Gracias por confiar en SUES Barbershop 💈</p>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.error("❌ Error al enviar correo:", err);
+          } else {
+            console.log("✅ Correo enviado:", info.response);
+          }
+        });
       }
-    );
+
+      return res.status(200).send("Cita guardada");
+    }
+  }
+);
+
   });
 });
 
@@ -222,6 +249,24 @@ app.get('/todas-las-citas', (req, res) => {
   });
 });
 
+app.get("/cancelar-cita/:token", (req, res) => {
+  const { token } = req.params;
+
+  const eliminarQuery = `DELETE FROM appointments WHERE token = ?`;
+
+  db.query(eliminarQuery, [token], (err, result) => {
+    if (err) {
+      console.error("❌ Error al cancelar cita:", err);
+      return res.send("<h2>Error al cancelar cita</h2>");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.send("<h2>Token inválido o la cita ya fue cancelada.</h2>");
+    }
+
+    return res.send("<h2>✅ Tu cita ha sido cancelada exitosamente.</h2>");
+  });
+});
 
 
 
