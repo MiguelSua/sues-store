@@ -144,7 +144,7 @@ app.get('/todas-las-citas', (req, res) => {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Nombre</th>
+                <th>Cliente</th>
                 <th>Correo</th>
                 <th>Fecha</th>
                 <th>Hora</th>
@@ -157,7 +157,7 @@ app.get('/todas-las-citas', (req, res) => {
       html += `
         <tr>
           <td>${cita.id}</td>
-          <td>${cita.nombre}</td>
+          <td>${cita.cliente}</td>
           <td>${cita.correo}</td>
           <td>${cita.fecha}</td>
           <td>${cita.hora}</td>
