@@ -6,6 +6,35 @@ const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
+const axios = require('axios');
+
+const enviarMensajeWhatsApp = async (telefono, mensaje) => {
+  const token = 'EAALHPKYLjnMBPODeFFeDGWAP5EKSQdVNCXcaCZCOuykzg1sOmO0mJ13NPKq0GtZB2BtYRXHPIK3lsGZArRwbDEu0ZBK87V3IZAPgOWxYmoL8ILnB1WiPk5YQTVzhYIeUZBw6v9ng9MGCmqOA2kpPhBZAurD05EaqXvDqYUm6EoeHD9WL5p7aCUvZAO1sd61RzAZBxMGEc4aoLXqWIoQ5aD4o3rxaZAKvqrnB9nY9gXevsaXGdHIqgZD'; // reemplaza por el real
+  const numeroID = '3152781700'; // reemplaza por el real
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v18.0/${numeroID}/messages`,
+      {
+        messaging_product: 'whatsapp',
+        to: telefono,
+        type: 'text',
+        text: { body: mensaje }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    console.log("Mensaje enviado:", res.data);
+  } catch (error) {
+    console.error("Error al enviar mensaje:", error.response.data);
+  }
+};
+
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -45,9 +74,11 @@ const transporter = nodemailer.createTransport({
 });
 
 
-app.post("/citas", (req, res) => {
+app.post("/citas", async (req, res) => {
   const { cliente, correo, telefono, fecha, hora } = req.body;
   const fechaActual = new Date().toISOString();
+
+  
 
   // Primero verificar si ya existe una cita en esa fecha y hora
   const verificarQuery = `
@@ -74,6 +105,7 @@ const insertarQuery = `
   INSERT INTO appointments (cliente, correo, telefono, fecha, hora, created_at, token)
   VALUES (?, ?, ?, ?, ?, ?, ?)
 `;
+
 
 db.query(
   insertarQuery,
@@ -107,12 +139,21 @@ db.query(
         });
       }
 
+      
+      enviarMensajeWhatsApp(
+            telefono,
+            `Hola ${cliente}, tu cita ha sido agendada para el ${fecha} a las ${hora}. Gracias por elegir SUES Barbershop.`
+          );
       return res.status(200).send("Cita guardada");
+
+      
     }
   }
 );
 
   });
+
+
 });
 
 // Ruta para obtener horas ocupadas en una fecha
