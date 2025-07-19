@@ -78,7 +78,7 @@ function App() {
       alert("✅ Cita agendada con éxito");
       setHorasOcupadas((prev) => [...prev, hora]);
     } catch (err) {
-      console.error("Error al guardar cita:", err);
+      console.error("❌ Error al guardar cita:", error.sqlMessage || error.message || error);
       alert("❌ No se pudo guardar la cita o alguien acaba de reservarla. Intenta nuevamente.");
     }
   };
